@@ -93,7 +93,7 @@
         .word-phonetic { font-size: 18px; color: #8e44ad; margin-bottom: 15px; font-family: 'Arial', sans-serif; }
         .word-meaning { font-size: 20px; font-weight: bold; color: #2c3e50; line-height: 1.4; }
         
-        .history-blocks { display: flex; justify-content: center; gap: 6px; margin-bottom: 15px; min-height: 14px; flex-wrap: wrap; }
+        .history-blocks { display: flex; justify-content: center; gap: 6px; margin-bottom: 15px; margin-top: 10px; min-height: 14px; flex-wrap: wrap; }
         .block { width: 14px; height: 14px; border-radius: 3px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.1); }
         .block-known { background-color: #2ecc71; }
         .block-forgot { background-color: #ff4757; }
@@ -144,6 +144,11 @@
         .sync-box h3 { margin-top: 0; color: #667eea; border-bottom: 2px solid #eee; padding-bottom: 10px; }
         .close-btn { position: absolute; top: 15px; right: 15px; cursor: pointer; font-size: 20px; color: #95a5a6; border: none; background: none; }
         .keyboard-hint { color: #bdc3c7; font-size: 12px; margin-top: 15px; }
+
+        /* 🌟 发音喇叭按钮样式 */
+        .speak-btn { cursor: pointer; transition: 0.2s; display: inline-block; margin-left: 12px; font-size: 26px; vertical-align: middle; user-select: none; filter: grayscale(100%) opacity(0.7); }
+        .speak-btn:hover { transform: scale(1.2); filter: grayscale(0%) opacity(1); }
+        .speak-btn:active { transform: scale(0.9); }
 
         /* 手机端自适应媒体查询 */
         @media screen and (max-width: 600px) {
@@ -284,11 +289,17 @@
         </div>
         
         <div class="word-card">
-            <div id="card-word" class="word-title">Word</div>
+            <div style="display: flex; justify-content: center; align-items: center;">
+                <div id="card-word" class="word-title" style="margin-bottom: 0;">Word</div>
+                <span id="prompt-speak" class="speak-btn hidden" onclick="speakCurrentWord()" title="点击朗读">🔊</span>
+            </div>
             <div id="card-history-blocks" class="history-blocks"></div>
             
             <div id="answer-section" class="hidden">
-                <div id="card-word-answer" class="word-title" style="color: #ff4757; display: none; margin-top: -10px; margin-bottom: 15px;"></div>
+                <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 15px;">
+                    <div id="card-word-answer" class="word-title" style="color: #ff4757; margin-bottom: 0; margin-top: -10px; display: none;"></div>
+                    <span id="answer-speak" class="speak-btn hidden" onclick="speakCurrentWord()" title="点击朗读">🔊</span>
+                </div>
                 <div id="card-phonetic" class="word-phonetic"></div>
                 <div id="card-meaning" class="word-meaning">释义</div>
                 
@@ -305,7 +316,7 @@
                 <button class="btn btn-danger" onclick="markWord('forgotten')">❌ 忘了 (队尾重现)</button>
                 <button class="btn btn-success" onclick="markWord('known')">✅ 认识 (下一个)</button>
             </div>
-            <p class="keyboard-hint">⌨️ PC端快捷键：[空格]看答案 | [←]忘了 | [→]认识</p>
+            <p class="keyboard-hint">⌨️ PC端快捷键：[空格]看答案 | [←]忘了 | [→]认识 | [↑]发音</p>
         </div>
     </div>
 
@@ -369,7 +380,22 @@
 </div>
 
 <script>
-    // === 数据存取与清洗 (完全隔离版: gre_vocab_logs) ===
+    // === 🌟 GRE 专属发音引擎引擎 ===
+    function speakCurrentWord() {
+        let currentWord = queue[currentIndex];
+        if (!currentWord || !('speechSynthesis' in window)) return;
+        
+        window.speechSynthesis.cancel(); 
+        
+        let textToSpeak = currentWord.word;
+        let utterance = new SpeechSynthesisUtterance(textToSpeak);
+        utterance.lang = 'en-US'; // 纯正美式发音
+        utterance.rate = 0.9;     // 降速0.9，方便听清多音节长词
+        
+        window.speechSynthesis.speak(utterance);
+    }
+
+    // === 数据存取与清洗 ===
     function getLogs() { return JSON.parse(localStorage.getItem('gre_vocab_logs') || '[]'); }
     
     function cleanUpDuplicateLogs() {
@@ -428,7 +454,7 @@
         return Math.max(...wordLogs.map(l => l.round));
     }
 
-    // === 🌟 云端同步功能 (GRE 专属键值: gre_cloud_bin_id, gre_cloud_api_key) ===
+    // === 云端同步功能 ===
     function openSyncModal() {
         document.getElementById('bin-id').value = localStorage.getItem('gre_cloud_bin_id') || '';
         document.getElementById('api-key').value = localStorage.getItem('gre_cloud_api_key') || '';
@@ -711,6 +737,9 @@
         let cardWordAnswerElem = document.getElementById('card-word-answer');
         let cardMeaningElem = document.getElementById('card-meaning');
         
+        let promptSpeak = document.getElementById('prompt-speak');
+        let answerSpeak = document.getElementById('answer-speak');
+        
         if (displayMode === 'en2cn') {
             cardWordElem.innerText = currentWord.word;
             cardWordElem.style.fontFamily = "'Times New Roman', serif";
@@ -720,6 +749,12 @@
             cardMeaningElem.innerText = currentWord.meaning;
             cardMeaningElem.style.display = 'block';
             cardWordAnswerElem.style.display = 'none';
+            
+            // 🌟 看英文想中文：提示区显示喇叭，自动发音
+            promptSpeak.classList.remove('hidden');
+            answerSpeak.classList.add('hidden');
+            speakCurrentWord();
+            
         } else {
             cardWordElem.innerText = currentWord.meaning;
             cardWordElem.style.fontFamily = "'Segoe UI', 'Microsoft YaHei', sans-serif";
@@ -730,6 +765,10 @@
             cardWordAnswerElem.innerText = currentWord.word;
             cardWordAnswerElem.style.display = 'block';
             cardMeaningElem.style.display = 'none';
+            
+            // 🌟 看中文想英文：翻牌前隐藏喇叭
+            promptSpeak.classList.add('hidden');
+            answerSpeak.classList.add('hidden');
         }
 
         let historyContainer = document.getElementById('card-history-blocks');
@@ -785,6 +824,13 @@
         document.getElementById('answer-section').classList.remove('hidden');
         document.getElementById('action-buttons').classList.remove('hidden');
         document.getElementById('btn-show-answer').classList.add('hidden');
+        
+        // 🌟 翻牌时必定触发发音（针对看中文想英文的模式）
+        let displayMode = document.querySelector('input[name="display-mode"]:checked').value;
+        if (displayMode === 'cn2en') {
+            document.getElementById('answer-speak').classList.remove('hidden');
+        }
+        speakCurrentWord();
     }
 
     function markWord(status) {
@@ -860,6 +906,12 @@
                 event.preventDefault();
                 markWord('known');
             }
+        }
+        
+        // 🌟 新增：上方向键重读发音
+        if (event.code === 'ArrowUp' || event.key === '3') {
+            event.preventDefault();
+            speakCurrentWord();
         }
     });
 
