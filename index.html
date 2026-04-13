@@ -6,7 +6,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>托福 & GRE 英语单词学习系统</title>
+    <title>TOEFL / GRE 英语学习系统</title>
     
     <link rel="manifest" href="manifest_en.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -20,7 +20,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
     
     <style>
-        /* 样式保持不变，已针对英语阅读优化 */
         body { font-family: 'Helvetica Neue', 'Arial', 'Microsoft YaHei', sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); display: flex; justify-content: center; padding: 20px 10px; color: #2c3e50; min-height: 100vh; margin: 0; box-sizing: border-box; }
         #app { background: rgba(255, 255, 255, 0.98); width: 100%; max-width: 620px; padding: 25px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; box-sizing: border-box; position: relative; }
         h1 { font-size: 22px; color: #2c3e50; border-bottom: 2px solid #ecf0f1; padding-bottom: 12px; margin-top: 0; font-weight: bold; }
@@ -32,33 +31,63 @@
         .btn-secondary { background-color: #95a5a6; color: white; }
         .btn-warning { background-color: #f39c12; color: white; }
         .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.15); opacity: 0.95; }
+        .btn:active { transform: translateY(0); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        input[type="number"], input[type="date"], input[type="text"], input[type="password"], select { padding: 10px 12px; width: 140px; border: 1px solid #dcdde1; border-radius: 6px; font-size: 14px; margin: 10px 0; outline: none; transition: 0.3s; background: #fdfdfd; box-sizing: border-box; }
+        input[type="number"]:focus, input[type="date"]:focus, input[type="text"]:focus, input[type="password"]:focus, select:focus { border-color: #3498db; box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2); }
+        select { width: 100%; font-family: inherit; }
         
         .word-card { margin: 20px 0; padding: 20px; border: none; border-top: 6px solid #3498db; border-radius: 12px; background: #ffffff; box-shadow: 0 8px 25px rgba(0,0,0,0.06); min-height: 140px; display: flex; flex-direction: column; justify-content: center; word-wrap: break-word; align-items: center; }
         .word-title { font-size: 32px; font-weight: bold; color: #2980b9; text-shadow: 1px 1px 2px rgba(0,0,0,0.05); font-family: 'Georgia', serif; }
-        .word-phonetic { font-size: 18px; color: #8e44ad; margin-bottom: 15px; font-family: 'Lucida Sans Unicode', sans-serif; }
+        .word-phonetic { font-size: 18px; color: #8e44ad; margin-bottom: 15px; font-family: 'Lucida Sans Unicode', sans-serif; text-align: center; }
         .word-meaning { font-size: 20px; font-weight: bold; color: #2c3e50; text-align: center; }
         
         .word-example { margin-top: 15px; width: 100%; text-align: left; background: #f8f9fa; padding: 12px 15px; border-radius: 8px; border-left: 4px solid #3498db; box-sizing: border-box; }
         .ex-row { display: flex; align-items: flex-start; margin-top: 6px; margin-bottom: 6px; }
-        .ex-label { font-size: 11px; font-weight: bold; color: white; padding: 2px 5px; border-radius: 4px; margin-right: 8px; white-space: nowrap; }
+        .ex-label { font-size: 11px; font-weight: bold; color: white; padding: 2px 5px; border-radius: 4px; margin-right: 8px; white-space: nowrap; line-height: 1.4; margin-top: 2px; }
         .en-label { background-color: #3498db; }
         .cn-label { background-color: #2ecc71; }
         .ex-en { font-size: 15px; color: #2c3e50; margin: 0; line-height: 1.6; flex: 1; font-family: 'Georgia', serif; }
         .ex-cn { font-size: 14px; color: #7f8c8d; margin: 0; line-height: 1.6; flex: 1; }
         
         .stat-box { text-align: left; background: #f8f9fa; padding: 15px; border-radius: 10px; margin-top: 15px; border: 1px solid #ecf0f1; font-size: 14px; }
-        .settings-box { background: #fff5e6; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: left; border-left: 5px solid #f39c12; }
+        .settings-box { background: #fff5e6; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: left; border-left: 5px solid #f39c12; font-size: 14px; }
+        .range-selector { background: #f8f9fa; padding: 10px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 13px; border: 1px solid #ecf0f1; }
+        .range-selector input { width: 60px; padding: 6px; font-size: 13px; text-align: center; }
         
-        .bottom-action-bar { position: fixed; bottom: 0; left: 0; width: 100%; padding: 15px 20px calc(20px + env(safe-area-inset-bottom)); background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); box-shadow: 0 -5px 25px rgba(0,0,0,0.08); z-index: 9999; display: flex; justify-content: center; box-sizing: border-box; }
-        .bottom-action-inner { width: 100%; max-width: 620px; display: flex; justify-content: center; }
-        .btn-huge { height: 75px !important; font-size: 20px !important; border-radius: 16px !important; font-weight: bold; width: 100%; }
+        .table-container { max-height: 380px; overflow-y: auto; margin-top: 15px; border: 1px solid #ecf0f1; border-radius: 8px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; background: white; }
+        th { background-color: #2c3e50; color: white; padding: 10px; position: sticky; top: 0; z-index: 10; font-weight: 500; }
+        td { padding: 10px; border-bottom: 1px solid #f1f2f6; }
+        tr:hover { background-color: #f8f9fa; }
         
-        .history-block { display: inline-block; width: 14px; height: 14px; margin: 0 3px; border-radius: 3px; opacity: 0.9; }
+        .filter-bar { margin: 15px 0; display: flex; justify-content: center; flex-wrap: wrap; gap: 6px; }
+        .data-management { margin-top: 15px; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; flex-direction: column; align-items: center; }
+        .data-buttons-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 5px; }
+        input[type="checkbox"] { transform: scale(1.3); cursor: pointer; accent-color: #3498db; }
+        
+        .history-block { display: inline-block; width: 14px; height: 14px; margin: 0 3px; border-radius: 3px; opacity: 0.9; box-shadow: 0 1px 3px rgba(0,0,0,0.15); transition: 0.2s; }
         .block-known { background-color: #2ecc71; }
         .block-forgotten { background-color: #e74c3c; }
+        #word-history-blocks { margin-bottom: 15px; margin-top: 10px; min-height: 14px; }
+        .keyboard-hint { color: #bdc3c7; font-size: 12px; margin-top: 15px; text-align: center; }
+        hr { border: 0; border-top: 1px solid #ecf0f1; margin: 20px 0; }
+
+        #sync-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .sync-box { background: white; width: 90%; max-width: 450px; padding: 25px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); text-align: left; position: relative; }
+        .sync-box h3 { margin-top: 0; color: #2980b9; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .close-btn { position: absolute; top: 15px; right: 15px; cursor: pointer; font-size: 20px; color: #95a5a6; border: none; background: none; }
         
-        .speak-btn { cursor: pointer; display: inline-block; margin-left: 12px; font-size: 26px; vertical-align: middle; filter: grayscale(100%) opacity(0.7); }
+        .speak-btn { cursor: pointer; transition: 0.2s; display: inline-block; margin-left: 12px; font-size: 26px; vertical-align: middle; user-select: none; filter: grayscale(100%) opacity(0.7); }
         .speak-btn:hover { transform: scale(1.2); filter: grayscale(0%) opacity(1); }
+        .speak-btn:active { transform: scale(0.9); }
+
+        #study-view { padding-bottom: 140px; }
+        
+        .bottom-action-bar { position: fixed; bottom: 0; left: 0; width: 100%; padding: 15px 20px calc(20px + env(safe-area-inset-bottom)); background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 -5px 25px rgba(0,0,0,0.08); z-index: 9999; display: flex; justify-content: center; box-sizing: border-box; }
+        .bottom-action-inner { width: 100%; max-width: 620px; display: flex; justify-content: center; }
+        .btn-huge { height: 75px !important; font-size: 20px !important; border-radius: 16px !important; font-weight: bold; margin: 0 !important; width: 100%; display: flex; justify-content: center; align-items: center; }
+        #action-buttons { width: 100%; display: flex; justify-content: space-between; gap: 15px; margin: 0; }
+        #action-buttons .btn { width: 100%; padding: 0; } 
     </style>
     
     <script>
@@ -69,11 +98,11 @@
 <div id="app">
     
     <div id="menu-view">
-        <h1 style="color: #34495e;">📚 托福 & GRE 突击面板</h1>
+        <h1 style="color: #34495e;">📚 英语学习面板</h1>
         
         <div class="settings-box" style="border-left-color: #8e44ad; background: #fdfaef;">
-            <strong style="color: #8e44ad;">📖 当前词库：</strong>
-            <select id="dictionary-select" onchange="switchDictionary()" style="margin-top: 5px; font-weight: bold; color: #8e44ad; width: 100%; padding: 10px;">
+            <strong style="color: #8e44ad;">📖 选择词库：</strong>
+            <select id="dictionary-select" onchange="switchDictionary()" style="margin-top: 5px; margin-bottom: 5px; font-weight: bold; color: #8e44ad;">
                 <option value="toefl">TOEFL 核心词汇</option>
                 <option value="gre">GRE 高阶词汇</option>
                 <option value="personal">🌟 随手记生词题库</option>
@@ -81,48 +110,60 @@
         </div>
 
         <div class="settings-box" style="border-left-color: #2ecc71; background: #f0fdf4;">
-            <strong style="color: #27ae60;">🎯 今日任务（艾宾浩斯统筹）</strong>
-            <p style="font-size: 11px; color: #7f8c8d; margin: 5px 0 10px 0;">系统将优先安排复习词，剩余名额分配给新词。</p>
+            <strong style="color: #27ae60;">🎯 今日学习目标（统筹模式）</strong>
+            <p style="font-size: 11px; color: #7f8c8d; margin: 5px 0 10px 0;">基于遗忘曲线，优先提取需要复习的单词，剩余名额自动分配给新词。</p>
             
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                <span style="font-size: 13px; font-weight: bold;">每日单词总量：</span>
-                <input type="number" id="daily-goal-count" value="100" style="width: 80px; padding: 6px;">
+                <span style="font-size: 13px; font-weight: bold; color: #2c3e50;">单日学习单词数：</span>
+                <input type="number" id="daily-goal-count" value="100" min="1" max="1000" style="width: 80px; padding: 6px; margin:0;" onchange="saveDailyGoal()">
             </div>
             
             <div style="font-size: 12px; color: #e74c3c; margin-bottom: 15px; background: #fdf5f5; padding: 8px; border-radius: 6px; text-align: center;">
-                当前待复习：<span id="srs-due-count" style="font-weight:bold; font-size:16px;">0</span> 个
+                当前待复习单词：<span id="srs-due-count" style="font-weight:bold; font-size:16px;">0</span> 个
             </div>
 
-            <button class="btn btn-success" style="width: 100%; font-size: 16px; padding: 12px;" onclick="startDailyStudy()">
-                🚀 开始学习
+            <button class="btn btn-success" style="width: 100%; font-size: 16px; padding: 12px; box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);" onclick="startDailyStudy()">
+                🚀 开始今日学习
             </button>
         </div>
 
         <div class="settings-box">
-            <strong>⚙️ 学习偏好：</strong>
-            <select id="study-mode-select" style="margin-top: 5px; width: 100%; padding: 8px;">
-                <option value="en2cn">🇬🇧 英文 ➔ 🇨🇳 中文</option>
-                <option value="cn2en">🇨🇳 中文 ➔ 🇬🇧 英文</option>
+            <strong style="color: #d35400;">⚙️ 基本设置：</strong>
+            <select id="study-mode-select" style="margin-top: 5px; margin-bottom: 10px;">
+                <option value="en2cn">🇬🇧 英文 ➔ 🇨🇳 中文 (标准)</option>
+                <option value="cn2en">🇨🇳 中文 ➔ 🇬🇧 英文 (挑战)</option>
+            </select>
+            <br>
+            <strong style="color: #d35400;">🔄 出题顺序：</strong>
+            <select id="study-order-select" style="margin-top: 5px;">
+                <option value="shuffle">🔀 随机 (防位置记忆)</option>
+                <option value="ordered">⬇️ ID顺序</option>
             </select>
         </div>
 
         <hr>
-        <button class="btn btn-warning" style="width: 100%;" onclick="openStatsCenter()">📊 数据中心 & 弱点特训</button>
+        <div>
+            <button class="btn btn-warning" style="width: 80%; padding: 12px; font-size: 15px;" onclick="openStatsCenter()">📊 进入单词数据中心</button>
+        </div>
         
         <div style="margin-top: 15px;">
-            <p style="font-weight: bold;">📅 学习历程：</p>
-            <input type="text" id="history-date" style="text-align: center; width: 100%; padding: 10px; margin-bottom: 5px;">
-            <button class="btn btn-primary" style="width: 100%;" onclick="viewHistoryDate()">🔍 查看该日详细记录</button>
+            <p style="font-weight: bold; color: #34495e;">📅 学习历史日历：</p>
+            <input type="text" id="history-date" style="text-align: center; cursor: pointer; background-color: #fff;">
+            <br>
+            <button class="btn btn-primary" onclick="viewHistoryDate()">🔍 查看此日期</button>
         </div>
 
         <hr style="border-top: 1px dashed #bdc3c7;">
-        <div class="data-management">
-            <button class="btn btn-primary" style="width: 100%; background-color: #8e44ad;" onclick="openSyncModal()">☁️ 云端同步 (压缩覆盖版)</button>
-            <div style="display: flex; gap: 5px; margin-top: 5px;">
-                <button class="btn btn-secondary" onclick="exportData()">导出</button>
-                <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()">导入</button>
-                <input type="file" id="import-file" class="hidden" accept=".json" onchange="importData(event)">
-                <button class="btn btn-danger" onclick="clearData()">清空</button>
+        <div>
+            <p style="color: #95a5a6; font-size: 12px; margin-bottom: 5px;">💾 数据同步・备份 (全题库通用)</p>
+            <div class="data-management">
+                <button class="btn btn-primary" style="width: 100%; font-size: 14px; background-color: #8e44ad;" onclick="openSyncModal()">☁️ API 云端同步 (极限压缩版)</button>
+                <div class="data-buttons-row">
+                    <button class="btn btn-secondary" onclick="exportData()">⬇️ 导出</button>
+                    <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()">⬆️ 导入</button>
+                    <input type="file" id="import-file" class="hidden" accept=".json" onchange="importData(event)">
+                    <button class="btn btn-danger" onclick="clearData()">🗑️ 清空所有记录</button>
+                </div>
             </div>
         </div>
     </div>
@@ -130,10 +171,19 @@
     <div id="sync-modal" class="hidden">
         <div class="sync-box">
             <button class="close-btn" onclick="closeSyncModal()">×</button>
-            <h3>☁️ 云端同步</h3>
-            <p style="font-size: 12px; color: #7f8c8d;">独立 Bin 存储，与日语版完全隔离。</p>
-            <input type="text" id="bin-id" placeholder="Bin ID" style="width: 100%; margin-bottom: 10px; padding: 10px;">
-            <input type="password" id="api-key" placeholder="API Key" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+            <h3>☁️ 云端同步设置</h3>
+            <p style="font-size: 13px; color: #7f8c8d; line-height: 1.5; margin-bottom: 15px;">
+                使用 <b>JSONBin.io</b> 进行同步。<br>
+                <span style="color:#e74c3c; font-weight:bold;">※ 独立英语存储桶机制，绝不与日语版冲突！</span>
+            </p>
+            <div style="margin-bottom: 10px;">
+                <label style="font-size: 12px; font-weight: bold; color: #34495e;">Bin ID:</label>
+                <input type="text" id="bin-id" style="width: 100%;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="font-size: 12px; font-weight: bold; color: #34495e;">API Key:</label>
+                <input type="password" id="api-key" style="width: 100%;">
+            </div>
             <div style="display: flex; gap: 10px;">
                 <button class="btn btn-warning" id="btn-upload" style="flex: 1;" onclick="uploadToCloud()">⬆️ 覆盖到云端</button>
                 <button class="btn btn-success" id="btn-download" style="flex: 1;" onclick="downloadFromCloud()">⬇️ 下载到本地</button>
@@ -141,56 +191,130 @@
         </div>
     </div>
 
+    <div id="history-detail-view" class="hidden">
+        <h1 id="history-date-title">学习记录</h1>
+        <div class="stat-box">
+            <p>📚 当日复习总数：<span id="hist-total" style="font-weight:bold; color:#2980b9;">0</span></p>
+            <p>✅ 当日判定【记住了】：<span id="hist-known" style="color:#2ecc71; font-weight:bold;">0</span></p>
+            <p>❌ 当日判定【没记住】：<span id="hist-forgot" style="color:#e74c3c; font-weight:bold;">0</span></p>
+        </div>
+        <div style="margin: 15px 0;">
+            <button class="btn btn-primary" onclick="startHistoryReview('all')">复习这一天的全部</button>
+            <button class="btn btn-danger" onclick="startHistoryReview('forgotten')">仅复习【没记住】</button>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead><tr><th>ID</th><th>单词</th><th>意思</th><th>状态</th></tr></thead>
+                <tbody id="history-detail-table-body"></tbody>
+            </table>
+        </div>
+        <button class="btn btn-secondary" style="margin-top: 20px;" onclick="backToMenu()">返回面板</button>
+    </div>
+
     <div id="study-view" class="hidden">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <button class="btn btn-secondary" onclick="goBack()">🔙 撤销</button>
-            <span id="progress-text" style="font-weight: bold;">0/0</span>
+            <div>
+                <button class="btn btn-secondary" style="padding: 6px 10px; font-size: 13px; background: #bdc3c7; color: #2c3e50;" onclick="goBack()">🔙 撤销</button>
+                <button class="btn btn-warning" style="padding: 6px 10px; font-size: 13px; background: #f39c12; margin-left: 5px;" onclick="exitStudyEarly()">🏠 提前结束</button>
+            </div>
+            <span id="progress-text" style="color: #34495e; font-weight: bold; background: #ecf0f1; padding: 4px 10px; border-radius: 20px; font-size: 13px;">0/0</span>
         </div>
+        
         <div class="word-card">
-            <div id="relearn-status" class="hidden"></div>
-            <div style="display: flex; align-items: center;">
-                <div id="card-prompt" class="word-title"></div>
-                <span id="prompt-speak" class="speak-btn hidden" onclick="speakCurrentWord()">🔊</span>
+            <div id="relearn-status" class="hidden" style="font-size: 13px; font-weight: bold; color: #e74c3c; margin-bottom: 12px; background: #fdf5f5; padding: 6px 12px; border-radius: 20px; border: 1px solid #fadbd8; box-shadow: 0 2px 4px rgba(231,76,60,0.1);"></div>
+            <div style="display: flex; justify-content: center; align-items: center; width: 100%;">
+                <div id="card-prompt" class="word-title" style="margin-bottom: 0;">提示区域</div>
+                <span id="prompt-speak" class="speak-btn hidden" onclick="speakCurrentWord()" title="单词发音">🔊</span>
             </div>
             <div id="word-history-blocks"></div>
             <div id="answer-section" class="hidden" style="width: 100%;">
-                <hr>
-                <div id="card-answer-title" class="word-title" style="color:#e67e22; font-size:26px;"></div>
+                <hr style="border-top: 1px dashed #ecf0f1; margin: 15px 0;">
+                <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 10px;">
+                    <div id="card-answer-title" class="word-title" style="color: #e67e22; margin-bottom: 0; font-size: 26px;"></div>
+                    <span id="answer-speak" class="speak-btn hidden" onclick="speakCurrentWord()" title="单词发音">🔊</span>
+                </div>
                 <div id="card-phonetic" class="word-phonetic"></div>
-                <div id="card-meaning" class="word-meaning"></div>
+                <div id="card-meaning" class="word-meaning">意思</div>
             </div>
+            
             <div id="card-example" class="word-example hidden">
                 <div class="ex-row">
                     <span id="label-primary" class="ex-label en-label">英</span>
                     <p id="ex-primary" class="ex-en"></p>
-                    <span id="ex-primary-speak" class="speak-btn hidden" onclick="speakExample()">🔊</span>
+                    <span id="ex-primary-speak" class="speak-btn hidden" onclick="speakExample()" title="朗读英文例句" style="font-size: 18px; margin-left: 8px; margin-top: -2px;">🔊</span>
                 </div>
-                <div id="ex-secondary-container" class="ex-row hidden">
+                <div id="ex-secondary-container" class="ex-row hidden" style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #bdc3c7;">
                     <span id="label-secondary" class="ex-label cn-label">中</span>
                     <p id="ex-secondary" class="ex-cn"></p>
+                    <span id="ex-secondary-speak" class="speak-btn hidden" onclick="speakExample()" title="朗读英文例句" style="font-size: 18px; margin-left: 8px; margin-top: -2px;">🔊</span>
                 </div>
             </div>
         </div>
+
+        <p class="keyboard-hint" style="margin-bottom: 80px;">⌨️ PC快捷键：[Space]解答 | [←]没记住 | [→]记住了 | [↑]发音</p>
+
         <div class="bottom-action-bar">
             <div class="bottom-action-inner">
-                <button id="btn-show-answer" class="btn btn-primary btn-huge" onclick="showAnswer()">显示答案</button>
-                <div id="action-buttons" class="hidden" style="display:flex; width:100%; gap:10px;">
+                <button id="btn-show-answer" class="btn btn-primary btn-huge" onclick="showAnswer()">显示解答</button>
+                <div id="action-buttons" class="hidden">
                     <button class="btn btn-danger btn-huge" onclick="markWord('forgotten')">没记住</button>
                     <button class="btn btn-success btn-huge" onclick="markWord('known')">记住了</button>
                 </div>
             </div>
         </div>
     </div>
+
+    <div id="summary-view" class="hidden">
+        <h1>🎉 学习完成</h1>
+        <div class="stat-box">
+            <p>✅ 首次判定【记住了】：<span id="stat-known-count" style="color:#2ecc71; font-weight:bold; font-size: 18px;">0</span> 个</p>
+            <p>❌ 首次判定【没记住】：<span id="stat-forgot-count" style="color:#e74c3c; font-weight:bold; font-size: 18px;">0</span> 个</p>
+            <p style="margin-top: 15px; font-size: 12px; color: #8e44ad; font-weight:bold;">* 仅该单词在本次会话的初次反应会计入忘却曲线。</p>
+            <p id="save-notice" style="margin-top: 10px; font-size: 13px; color: #7f8c8d; border-top: 1px dashed #ccc; padding-top: 10px;">💾 学习记录已自动保存。</p>
+        </div>
+        <button class="btn btn-primary" style="margin-top: 20px; width: 60%;" onclick="backToMenu()">返回面板</button>
+    </div>
+
+    <div id="stats-view" class="hidden">
+        <h1>📊 单词数据中心</h1>
+        <div class="range-selector">
+            <span style="font-weight: bold; color: #34495e;">ID指定：</span>
+            <input type="number" id="range-start" placeholder="始"> <span style="color: #7f8c8d;">〜</span>
+            <input type="number" id="range-end" placeholder="终">
+            <button class="btn btn-primary" style="padding: 6px 12px; margin: 0;" onclick="selectIdRange()">一键选择</button>
+            <button class="btn btn-secondary" style="padding: 6px 12px; margin: 0; background-color: #bdc3c7; color: #333;" onclick="clearSelection()">清空选择</button>
+        </div>
+        <div class="filter-bar">
+            <button class="btn btn-secondary" style="font-size: 12px;" onclick="renderStatsTable('idAsc')">ID顺</button>
+            <button class="btn btn-secondary" style="font-size: 12px;" onclick="renderStatsTable('reviewsDesc')">复习次数顺</button>
+            <button class="btn btn-danger" style="font-size: 12px;" onclick="renderStatsTable('forgotDesc')">🔥 弱点排行</button>
+        </div>
+        <div style="margin: 15px 0;">
+            <button class="btn btn-success" style="width: 100%; font-weight: bold; padding: 10px;" onclick="startCustomStudy()">📚 对选中单词进行特训</button>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 25px; text-align: center;"><input type="checkbox" id="select-all-cb" onclick="toggleSelectAll()"></th>
+                        <th>ID</th><th>单词</th><th>下次日期</th><th>熟悉度</th>
+                    </tr>
+                </thead>
+                <tbody id="stats-table-body"></tbody>
+            </table>
+        </div>
+        <button class="btn btn-secondary" style="margin-top: 20px;" onclick="safeBackFromStats()">返回面板</button>
+    </div>
 </div>
 
 <script>
-    // 逻辑核心：词库切换与数据隔离
     let activeBankName = 'toefl';
 
     function switchDictionary() {
         activeBankName = document.getElementById('dictionary-select').value;
+        cleanUpDuplicateLogs(); 
+        updateHistoryCalendar(); 
         updateDueCountDisplay();
-        updateHistoryCalendar();
     }
 
     function getCurrentBank() {
@@ -200,58 +324,532 @@
         return [];
     }
 
-    // 独立键名
-    function getLogKey() { return 'en_logs_' + activeBankName; }
-    function getSRSKey() { return 'en_srs_' + activeBankName; }
+    // 这里是保证 ID 绝对不会冲突的核心：动态获取存储键名
+    function getLogKey() { 
+        if (activeBankName === 'personal') return 'en_vocab_logs_personal';
+        return activeBankName === 'toefl' ? 'en_vocab_logs_toefl' : 'en_vocab_logs_gre'; 
+    }
+    function getSRSKey() { 
+        if (activeBankName === 'personal') return 'en_srs_data_personal';
+        return activeBankName === 'toefl' ? 'en_srs_data_toefl' : 'en_srs_data_gre'; 
+    }
 
-    // TTS 配置
     function speakCurrentWord() {
-        let word = queue[currentIndex];
-        if (!word || !('speechSynthesis' in window)) return;
-        window.speechSynthesis.cancel();
-        let u = new SpeechSynthesisUtterance(word.word);
-        u.lang = 'en-US'; u.rate = 0.85; window.speechSynthesis.speak(u);
+        let currentWord = queue[currentIndex];
+        if (!currentWord || !('speechSynthesis' in window)) return;
+        window.speechSynthesis.cancel(); 
+        let utterance = new SpeechSynthesisUtterance(currentWord.word);
+        utterance.lang = 'en-US'; 
+        utterance.rate = 0.85; 
+        window.speechSynthesis.speak(utterance);
     }
 
     function speakExample() {
-        let word = queue[currentIndex];
-        if (!word || !word.example_en) return;
-        window.speechSynthesis.cancel();
-        let u = new SpeechSynthesisUtterance(word.example_en);
-        u.lang = 'en-US'; u.rate = 0.85; window.speechSynthesis.speak(u);
+        let currentWord = queue[currentIndex];
+        if (!currentWord || !currentWord.example_en || !('speechSynthesis' in window)) return;
+        window.speechSynthesis.cancel(); 
+        let utterance = new SpeechSynthesisUtterance(currentWord.example_en);
+        utterance.lang = 'en-US'; 
+        utterance.rate = 0.85; 
+        window.speechSynthesis.speak(utterance);
     }
 
-    // 云端极限压缩引擎
-    function minifyLogs(logs) { return logs.map(l => [l.wordId, l.date.substring(2), l.round, l.status === 'known' ? 1 : 0]); }
-    function unminifyLogs(m) { return m.map(a => ({ wordId: a[0], date: "20" + a[1], round: a[2], status: a[3] === 1 ? 'known' : 'forgotten' })); }
-    
+    function triggerVibration(type) {
+        if ('vibrate' in navigator) {
+            if (type === 'heavy') navigator.vibrate(50);
+            else if (type === 'light') navigator.vibrate([30, 50, 30]);
+        }
+    }
+
+    function getSRSBank() { return JSON.parse(localStorage.getItem(getSRSKey()) || '{}'); }
+    function saveSRSBank(data) { localStorage.setItem(getSRSKey(), JSON.stringify(data)); }
+    function saveDailyGoal() { localStorage.setItem('en_daily_goal_config', parseInt(document.getElementById('daily-goal-count').value) || 100); }
+
+    function updateSRS(wordId, status) {
+        let srsBank = getSRSBank();
+        let today = new Date().toISOString().split('T')[0];
+        let data = srsBank[wordId] || { i: 0, e: 2.5, d: today, l: null };
+        if (data.l === today) return;
+
+        const MAX_INTERVAL = 180; 
+
+        if (status === 'known') {
+            if (data.i === 0) data.i = 3; 
+            else data.i = Math.max(2, Math.round(data.i * data.e)); 
+            data.e = Math.min(3.0, data.e + 0.15); 
+        } else if (status === 'forgotten') {
+            data.i = 1; data.e = Math.max(1.3, data.e - 0.2); 
+        }
+
+        data.i = Math.min(data.i, MAX_INTERVAL);
+
+        let nextDate = new Date(); nextDate.setDate(nextDate.getDate() + data.i);
+        data.d = nextDate.toISOString().split('T')[0]; data.l = today; 
+        srsBank[wordId] = data; saveSRSBank(srsBank);
+    }
+
+    function updateDueCountDisplay() {
+        let savedGoal = parseInt(localStorage.getItem('en_daily_goal_config')) || 100;
+        document.getElementById('daily-goal-count').value = savedGoal;
+        let today = new Date().toISOString().split('T')[0];
+        let srsBank = getSRSBank();
+        let dueIds = Object.keys(srsBank).filter(id => srsBank[id].d <= today).map(Number);
+        document.getElementById('srs-due-count').innerText = dueIds.length;
+    }
+
+    function startDailyStudy() {
+        let totalGoal = parseInt(document.getElementById('daily-goal-count').value);
+        if (isNaN(totalGoal) || totalGoal <= 0) return alert('请输入有效数字');
+        saveDailyGoal();
+        let srsBank = getSRSBank(); let bank = getCurrentBank(); let today = new Date().toISOString().split('T')[0];
+        let dueIds = Object.keys(srsBank).filter(id => srsBank[id].d <= today).map(Number);
+        dueIds.sort((a, b) => {
+            if (srsBank[a].i !== srsBank[b].i) return srsBank[a].i - srsBank[b].i;
+            return new Date(srsBank[a].d) - new Date(srsBank[b].d);
+        });
+        let reviewIds = dueIds.slice(0, totalGoal);
+        let wordsToStudy = reviewIds.map(id => bank.find(w => w.id === id)).filter(w => w);
+        let remainingQuota = totalGoal - wordsToStudy.length;
+        if (remainingQuota > 0) {
+            let availableNewWords = bank.filter(w => !srsBank[w.id] || srsBank[w.id].d > today);
+            let reviewCounts = {}; availableNewWords.forEach(w => reviewCounts[w.id] = 0);
+            getLogs().forEach(log => { if (reviewCounts[log.wordId] !== undefined) reviewCounts[log.wordId]++; });
+            let newWords = availableNewWords.sort((a, b) => (reviewCounts[a.id] + Math.random()) - (reviewCounts[b.id] + Math.random())).slice(0, remainingQuota);
+            wordsToStudy = wordsToStudy.concat(newWords);
+        }
+        if (wordsToStudy.length === 0) return alert('当前没有需要学习的单词。');
+        initSession(wordsToStudy);
+    }
+
+    function getLogs() { return JSON.parse(localStorage.getItem(getLogKey()) || '[]'); }
+    function cleanUpDuplicateLogs() {
+        let logs = getLogs(); if (logs.length === 0) return;
+        let uniqueLogsMap = {}; let needsCleanup = false;
+        logs.forEach(log => {
+            let key = log.wordId + "_" + log.date;
+            if (!uniqueLogsMap[key]) { uniqueLogsMap[key] = log; } 
+            else { needsCleanup = true; if (log.status === 'forgotten') uniqueLogsMap[key].status = 'forgotten'; }
+        });
+        if (needsCleanup) {
+            let cleanedLogs = Object.values(uniqueLogsMap).sort((a, b) => new Date(a.date) - new Date(b.date));
+            let roundTracker = {};
+            cleanedLogs.forEach(log => {
+                if (!roundTracker[log.wordId]) roundTracker[log.wordId] = 0;
+                roundTracker[log.wordId]++; log.round = roundTracker[log.wordId];
+            });
+            localStorage.setItem(getLogKey(), JSON.stringify(cleanedLogs));
+        }
+    }
+    cleanUpDuplicateLogs();
+
+    function saveLog(wordId, round, firstImpression) {
+        let logs = getLogs(); let today = new Date().toISOString().split('T')[0]; 
+        let existingLogIndex = logs.findIndex(l => l.date === today && l.wordId === wordId);
+        if (existingLogIndex !== -1) {
+            if (firstImpression === 'forgotten') { logs[existingLogIndex].status = 'forgotten'; localStorage.setItem(getLogKey(), JSON.stringify(logs)); }
+        } else {
+            logs.push({ date: today, wordId: wordId, round: round, status: firstImpression });
+            localStorage.setItem(getLogKey(), JSON.stringify(logs));
+        }
+    }
+
+    function getMaxRound(wordId) {
+        let logs = getLogs(); let wordLogs = logs.filter(log => log.wordId === wordId);
+        if (wordLogs.length === 0) return 0; return Math.max(...wordLogs.map(l => l.round));
+    }
+
+    function openSyncModal() { document.getElementById('bin-id').value = localStorage.getItem('en_cloud_bin_id') || ''; document.getElementById('api-key').value = localStorage.getItem('en_cloud_api_key') || ''; document.getElementById('sync-modal').classList.remove('hidden'); }
+    function closeSyncModal() { document.getElementById('sync-modal').classList.add('hidden'); }
+
+    function getCombinedLogs() {
+        return {
+            toefl: JSON.parse(localStorage.getItem('en_vocab_logs_toefl') || '[]'),
+            gre: JSON.parse(localStorage.getItem('en_vocab_logs_gre') || '[]'),
+            personal: JSON.parse(localStorage.getItem('en_vocab_logs_personal') || '[]'),
+            srs_toefl: JSON.parse(localStorage.getItem('en_srs_data_toefl') || '{}'),
+            srs_gre: JSON.parse(localStorage.getItem('en_srs_data_gre') || '{}'),
+            srs_personal: JSON.parse(localStorage.getItem('en_srs_data_personal') || '{}')
+        };
+    }
+
+    function minifyLogs(logs) {
+        return logs.map(l => [l.wordId, l.date.substring(2), l.round, l.status === 'known' ? 1 : 0]);
+    }
+    function unminifyLogs(minLogs) {
+        if (!minLogs) return [];
+        if (minLogs.length > 0 && !Array.isArray(minLogs[0])) return minLogs; 
+        return minLogs.map(arr => ({ wordId: arr[0], date: "20" + arr[1], round: arr[2], status: arr[3] === 1 ? 'known' : 'forgotten' }));
+    }
+    function minifySRS(srs) {
+        let min = {};
+        for (let k in srs) { min[k] = [srs[k].i, srs[k].e, srs[k].d ? srs[k].d.substring(2) : "", srs[k].l ? srs[k].l.substring(2) : ""]; }
+        return min;
+    }
+    function unminifySRS(minSrs) {
+        if (!minSrs) return {};
+        let unmin = {};
+        for (let k in minSrs) {
+            if (Array.isArray(minSrs[k])) { unmin[k] = { i: minSrs[k][0], e: minSrs[k][1], d: minSrs[k][2] ? "20" + minSrs[k][2] : null, l: minSrs[k][3] ? "20" + minSrs[k][3] : null }; } 
+            else { unmin[k] = minSrs[k]; } 
+        }
+        return unmin;
+    }
+
+    function restoreCombinedLogs(data) {
+        if (data.toefl) localStorage.setItem('en_vocab_logs_toefl', JSON.stringify(data.toefl));
+        if (data.gre) localStorage.setItem('en_vocab_logs_gre', JSON.stringify(data.gre));
+        if (data.personal) localStorage.setItem('en_vocab_logs_personal', JSON.stringify(data.personal));
+        if (data.srs_toefl) localStorage.setItem('en_srs_data_toefl', JSON.stringify(data.srs_toefl));
+        if (data.srs_gre) localStorage.setItem('en_srs_data_gre', JSON.stringify(data.srs_gre));
+        if (data.srs_personal) localStorage.setItem('en_srs_data_personal', JSON.stringify(data.srs_personal));
+        cleanUpDuplicateLogs(); updateHistoryCalendar(); updateDueCountDisplay();
+    }
+
     async function uploadToCloud() {
-        let binId = document.getElementById('bin-id').value;
-        let apiKey = document.getElementById('api-key').value;
-        if(!binId || !apiKey) return alert("请输入配置");
+        let binId = document.getElementById('bin-id').value.trim(); let apiKey = document.getElementById('api-key').value.trim();
+        if (!binId || !apiKey) return alert("⚠️ 请输入Bin ID和Key！");
+        localStorage.setItem('en_cloud_bin_id', binId); localStorage.setItem('en_cloud_api_key', apiKey);
         
-        let raw = {
-            t: minifyLogs(JSON.parse(localStorage.getItem('en_logs_toefl') || '[]')),
-            g: minifyLogs(JSON.parse(localStorage.getItem('en_logs_gre') || '[]')),
-            st: JSON.parse(localStorage.getItem('en_srs_toefl') || '{}'),
-            sg: JSON.parse(localStorage.getItem('en_srs_gre') || '{}')
+        let rawData = getCombinedLogs();
+        
+        let payloadData = {
+            t: minifyLogs(rawData.toefl), g: minifyLogs(rawData.gre), p: minifyLogs(rawData.personal),
+            st: minifySRS(rawData.srs_toefl), sg: minifySRS(rawData.srs_gre), sp: minifySRS(rawData.srs_personal)
         };
         
-        let compressed = LZString.compressToBase64(JSON.stringify(raw));
+        let compressedData = LZString.compressToBase64(JSON.stringify(payloadData));
+        let payload = { data: compressedData, compressed: true };
         let btn = document.getElementById('btn-upload'); btn.innerText = "上传中...";
-
+        
         try {
-            let res = await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'X-Master-Key': apiKey, 'X-Bin-Versioning': 'false' },
-                body: JSON.stringify({ data: compressed, compressed: true })
+            let response = await fetch(`https://api.jsonbin.io/v3/b/${binId}`, { 
+                method: 'PUT', 
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'X-Master-Key': apiKey,
+                    'X-Bin-Versioning': 'false' 
+                }, 
+                body: JSON.stringify(payload) 
             });
-            if (res.ok) alert("☁️ 已成功覆盖云端！");
-        } catch (e) { alert("同步失败"); } finally { btn.innerText = "⬆️ 覆盖到云端"; }
+            if (response.ok) { alert("☁️ 同步完成！"); closeSyncModal(); } 
+            else { let err = await response.json(); alert(`❌ Error: ${err.message}`); }
+        } catch (e) { alert("Network Error"); } finally { btn.innerText = "⬆️ 覆盖到云端"; }
     }
 
-    // 其他逻辑 (SRS 算法、会话控制等) 保持 100% 相同...
-    // [由于篇幅限制，此处不再重复 JS 基础通用代码部分，请确保从日语版中移植]
+    async function downloadFromCloud() {
+        let binId = document.getElementById('bin-id').value.trim(); let apiKey = document.getElementById('api-key').value.trim();
+        if (!binId || !apiKey) return alert("⚠️ 请输入Bin ID和Key");
+        localStorage.setItem('en_cloud_bin_id', binId); localStorage.setItem('en_cloud_api_key', apiKey);
+        if (!confirm("⚠️ 确定要使用云端数据覆盖本地吗？")) return;
+        let btn = document.getElementById('btn-download'); btn.innerText = "下载中...";
+        try {
+            let response = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, { method: 'GET', headers: { 'X-Master-Key': apiKey } });
+            if (response.ok) {
+                let json = await response.json(); let record = json.record; let finalData;
+                if (record.compressed === true && record.data) { finalData = JSON.parse(LZString.decompressFromBase64(record.data)); } else { finalData = record; }
+                
+                let restored = {
+                    toefl: finalData.t ? unminifyLogs(finalData.t) : (finalData.toefl || []),
+                    gre: finalData.g ? unminifyLogs(finalData.g) : (finalData.gre || []),
+                    personal: finalData.p ? unminifyLogs(finalData.p) : (finalData.personal || []),
+                    srs_toefl: finalData.st ? unminifySRS(finalData.st) : (finalData.srs_toefl || {}),
+                    srs_gre: finalData.sg ? unminifySRS(finalData.sg) : (finalData.srs_gre || {}),
+                    srs_personal: finalData.sp ? unminifySRS(finalData.sp) : (finalData.srs_personal || {})
+                };
+                
+                restoreCombinedLogs(restored); alert("🎉 同步成功！"); closeSyncModal();
+            } else { let err = await response.json(); alert(`❌ Error: ${err.message}`); }
+        } catch (e) { alert("Network Error"); } finally { btn.innerText = "⬇️ 下载到本地"; }
+    }
+
+    function exportData() {
+        let blob = new Blob([JSON.stringify(getCombinedLogs())], { type: "application/json" });
+        let url = URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url;
+        a.download = `EN_Vocab_Backup_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    }
+
+    function importData(event) {
+        let file = event.target.files[0]; if (!file) return;
+        let reader = new FileReader();
+        reader.onload = function(e) { try { restoreCombinedLogs(JSON.parse(e.target.result)); alert("✅ 导入成功！"); } catch (err) { alert("❌ 文件解析失败"); } };
+        reader.readAsText(file);
+    }
+
+    function clearData() {
+        if (confirm("⚠️ 警告：确定要清空所有的英语学习记录吗？")) {
+            localStorage.removeItem('en_vocab_logs_toefl'); localStorage.removeItem('en_vocab_logs_gre'); localStorage.removeItem('en_vocab_logs_personal');
+            localStorage.removeItem('en_srs_data_toefl'); localStorage.removeItem('en_srs_data_gre'); localStorage.removeItem('en_srs_data_personal');
+            updateHistoryCalendar(); updateDueCountDisplay(); alert("🗑️ 已清空！");
+        }
+    }
+
+    let historyCalendarInstance = null;
+    function updateHistoryCalendar() {
+        let logs = getLogs(); let activeDates = [...new Set(logs.map(log => log.date))];
+        if (historyCalendarInstance) historyCalendarInstance.destroy();
+        historyCalendarInstance = flatpickr(document.getElementById('history-date'), {
+            locale: "zh", dateFormat: "Y-m-d", enable: activeDates.length > 0 ? activeDates : ["1970-01-01"], 
+            onChange: function(d, dateStr) { document.getElementById('history-date').value = dateStr; viewHistoryDate(); }
+        });
+        if (activeDates.length > 0) { activeDates.sort(); historyCalendarInstance.setDate(activeDates[activeDates.length - 1]); } 
+    }
+
+    function viewHistoryDate() {
+        let dateStr = document.getElementById('history-date').value; if (!dateStr) return;
+        let targetLogs = getLogs().filter(log => log.date === dateStr); if (targetLogs.length === 0) return;
+        let dailyMap = {}; targetLogs.forEach(log => { if (dailyMap[log.wordId] !== 'forgotten') dailyMap[log.wordId] = log.status; });
+        let bank = getCurrentBank(); let allIds = Object.keys(dailyMap).map(Number);
+        currentHistoryWords.all = allIds.map(id => bank.find(w => w.id === id)).filter(w => w);
+        currentHistoryWords.forgotten = allIds.filter(id => dailyMap[id] === 'forgotten').map(id => bank.find(w => w.id === id)).filter(w => w);
+        document.getElementById('history-date-title').innerText = `${dateStr} 的记录`;
+        document.getElementById('hist-total').innerText = allIds.length;
+        document.getElementById('hist-known').innerText = currentHistoryWords.all.length - currentHistoryWords.forgotten.length;
+        document.getElementById('hist-forgot').innerText = currentHistoryWords.forgotten.length;
+        let tbody = document.getElementById('history-detail-table-body'); tbody.innerHTML = '';
+        allIds.forEach(id => {
+            let wordObj = bank.find(w => w.id === id);
+            if (wordObj) {
+                let isKnown = dailyMap[id] === 'known'; let tr = document.createElement('tr');
+                tr.innerHTML = `<td>${id}</td><td style="font-weight:bold; color:#2980b9;">${wordObj.word}</td><td>${wordObj.meaning}</td><td style="color:${isKnown ? '#2ecc71' : '#e74c3c'};">${isKnown ? '✅' : '❌'}</td>`;
+                tbody.appendChild(tr);
+            }
+        });
+        hideAllViews(); document.getElementById('history-detail-view').classList.remove('hidden');
+    }
+
+    let queue = []; let historyStack = []; let firstImpressions = {}; let currentIndex = 0;
+    let relearnSteps = {}; let currentStudyMode = 'en2cn'; let currentHistoryWords = { all: [], forgotten: [] };
+
+    function saveSessionBackup() {
+        const state = { queue, historyStack, firstImpressions, currentIndex, relearnSteps, currentStudyMode, activeBankName };
+        localStorage.setItem('en_active_session', JSON.stringify(state));
+    }
+
+    function clearSessionBackup() {
+        localStorage.removeItem('en_active_session');
+    }
+
+    function startHistoryReview(type) {
+        let words = type === 'forgotten' ? currentHistoryWords.forgotten : currentHistoryWords.all;
+        if (words.length === 0) return alert('当前没有匹配的单词');
+        initSession(words);
+    }
+
+    function startCustomStudy() {
+        let bank = getCurrentBank();
+        let selectedIds = Array.from(document.querySelectorAll('.word-checkbox:checked')).map(cb => parseInt(cb.value));
+        if (selectedIds.length === 0) return alert('未选择任何单词');
+        document.getElementById('select-all-cb').checked = false;
+        initSession(selectedIds.map(id => bank.find(w => w.id === id)).filter(w => w));
+    }
+
+    function initSession(words) {
+        if (words.length === 0) return;
+        let orderMode = document.getElementById('study-order-select').value || 'shuffle';
+        let finalWords = [...words];
+        if (orderMode === 'shuffle') { for (let i = finalWords.length - 1; i > 0; i--) { let j = Math.floor(Math.random() * (i + 1)); [finalWords[i], finalWords[j]] = [finalWords[j], finalWords[i]]; } }
+        queue = finalWords; historyStack = []; firstImpressions = {}; currentIndex = 0; relearnSteps = {};
+        currentStudyMode = document.getElementById('study-mode-select').value || 'en2cn';
+        
+        clearSessionBackup(); 
+        
+        hideAllViews(); document.getElementById('study-view').classList.remove('hidden');
+        history.pushState({ isStudying: true }, '', '#study');
+        
+        renderWord();
+    }
+
+    function renderWord() {
+        if (currentIndex >= queue.length) return finishSession();
+        let word = queue[currentIndex];
+        let pe = document.getElementById('card-prompt'), aT = document.getElementById('card-answer-title'), mE = document.getElementById('card-meaning');
+        let ps = document.getElementById('prompt-speak'), as = document.getElementById('answer-speak'), rsEl = document.getElementById('relearn-status'); 
+        let exContainer = document.getElementById('card-example'), exPrimary = document.getElementById('ex-primary'), exSecondary = document.getElementById('ex-secondary'), exSecContainer = document.getElementById('ex-secondary-container'), labelPrimary = document.getElementById('label-primary'), labelSecondary = document.getElementById('label-secondary');
+        
+        let exPSpeak = document.getElementById('ex-primary-speak');
+        let exSSpeak = document.getElementById('ex-secondary-speak');
+
+        let currentStep = relearnSteps[word.id];
+        if (currentStep !== undefined && currentStep < 2) { 
+            rsEl.innerText = `🔥 强化中: 再连续答对 ${2 - currentStep} 次即可消除`; 
+            rsEl.classList.remove('hidden'); 
+        } else { 
+            rsEl.classList.add('hidden'); 
+        }
+
+        if (currentStudyMode === 'en2cn') {
+            pe.innerText = word.word; aT.style.display = 'none'; mE.innerText = word.meaning; mE.style.display = 'block'; ps.classList.remove('hidden'); as.classList.add('hidden'); 
+            if (word.example_en && word.example_cn) { 
+                labelPrimary.innerText = '英'; labelPrimary.className = 'ex-label en-label'; 
+                labelSecondary.innerText = '中'; labelSecondary.className = 'ex-label cn-label'; 
+                exPrimary.innerText = word.example_en; exPrimary.className = 'ex-en'; 
+                exSecondary.innerText = word.example_cn; exSecondary.className = 'ex-cn'; 
+                exContainer.classList.remove('hidden'); exSecContainer.classList.add('hidden'); 
+                exPSpeak.classList.remove('hidden'); exSSpeak.classList.add('hidden');
+            } else { exContainer.classList.add('hidden'); }
+            speakCurrentWord(); 
+        } else {
+            pe.innerText = word.meaning; aT.innerText = word.word; aT.style.display = 'block'; mE.style.display = 'none'; ps.classList.add('hidden'); as.classList.add('hidden'); 
+            if (word.example_en && word.example_cn) { 
+                labelPrimary.innerText = '中'; labelPrimary.className = 'ex-label cn-label'; 
+                labelSecondary.innerText = '英'; labelSecondary.className = 'ex-label en-label'; 
+                exPrimary.innerText = word.example_cn; exPrimary.className = 'ex-cn'; 
+                exSecondary.innerText = word.example_en; exSecondary.className = 'ex-en'; 
+                exContainer.classList.remove('hidden'); exSecContainer.classList.add('hidden'); 
+                exPSpeak.classList.add('hidden'); exSSpeak.classList.remove('hidden');
+            } else { exContainer.classList.add('hidden'); }
+        }
+        let wordLogs = getLogs().filter(log => log.wordId === word.id).sort((a, b) => a.round - b.round);
+        document.getElementById('word-history-blocks').innerHTML = wordLogs.map(log => `<span class="history-block ${log.status === 'known' ? 'block-known' : 'block-forgotten'}"></span>`).join('');
+        
+        let pE = document.getElementById('card-phonetic');
+        if (word.phonetic && word.phonetic.trim() !== "") { pE.innerText = `[ ${word.phonetic} ]`; pE.style.display = 'block'; } else { pE.style.display = 'none'; }
+        
+        document.getElementById('progress-text').innerText = `进度: ${currentIndex + 1} / ${queue.length}`;
+        document.getElementById('answer-section').classList.add('hidden'); document.getElementById('action-buttons').classList.add('hidden'); document.getElementById('btn-show-answer').classList.remove('hidden');
+    }
+
+    function showAnswer() {
+        triggerVibration('heavy'); document.getElementById('answer-section').classList.remove('hidden'); document.getElementById('ex-secondary-container').classList.remove('hidden'); document.getElementById('action-buttons').classList.remove('hidden'); document.getElementById('btn-show-answer').classList.add('hidden');
+        if (currentStudyMode === 'cn2en') { document.getElementById('answer-speak').classList.remove('hidden'); }
+        speakCurrentWord();
+    }
+
+    function markWord(status) {
+        triggerVibration('light');
+        let word = queue[currentIndex];
+        let isFirstAppearance = queue.findIndex(w => w.id === word.id) === currentIndex;
+        if (isFirstAppearance) firstImpressions[word.id] = status;
+        let previousStep = relearnSteps[word.id];
+        historyStack.push({ index: currentIndex, status: status, isFirst: isFirstAppearance, prevStep: previousStep });
+        
+        if (status === 'forgotten') { 
+            relearnSteps[word.id] = Math.max(0, (previousStep || 0) - 1); 
+            queue.splice(currentIndex + 4, 0, word); 
+        } 
+        else if (status === 'known') {
+            if (!isFirstAppearance) { 
+                let currentStep = previousStep || 0;
+                if (currentStep < 1) { 
+                    relearnSteps[word.id] = currentStep + 1; 
+                    let dynamicStep = 8; 
+                    queue.splice(currentIndex + dynamicStep, 0, word); 
+                } else { 
+                    relearnSteps[word.id] = 2;
+                }
+            }
+        }
+        currentIndex++; 
+        saveSessionBackup(); 
+        renderWord();
+    }
+
+    function goBack() {
+        if (historyStack.length === 0) return; 
+        let lastAction = historyStack.pop(); let targetIndex = lastAction.index; let targetWord = queue[targetIndex];
+        let wasInjected = (lastAction.status === 'forgotten' || (lastAction.status === 'known' && !lastAction.isFirst && (lastAction.prevStep || 0) < 1));
+        if (wasInjected) { for (let i = queue.length - 1; i > targetIndex; i--) { if (queue[i].id === targetWord.id) { queue.splice(i, 1); break; } } }
+        if (lastAction.isFirst) delete firstImpressions[targetWord.id];
+        if (lastAction.prevStep === undefined) delete relearnSteps[targetWord.id]; else relearnSteps[targetWord.id] = lastAction.prevStep;
+        currentIndex = targetIndex; 
+        saveSessionBackup(); 
+        renderWord(); 
+    }
+    
+    function exitStudyEarly() { if (confirm("确定要提前结束本次学习吗？")) finishSession(); }
+    
+    function finishSession() {
+        let knownCount = 0; let forgotCount = 0;
+        for (let wordIdStr in firstImpressions) {
+            let id = parseInt(wordIdStr); let status = firstImpressions[wordIdStr];
+            if (status === 'known') knownCount++; else forgotCount++;
+            saveLog(id, getMaxRound(id) + 1, status); updateSRS(id, status);
+        }
+        document.getElementById('stat-known-count').innerText = knownCount; document.getElementById('stat-forgot-count').innerText = forgotCount;
+        updateHistoryCalendar(); updateDueCountDisplay(); 
+        clearSessionBackup(); 
+        hideAllViews(); document.getElementById('summary-view').classList.remove('hidden');
+    }
+
+    document.addEventListener('keydown', function(event) {
+        if (document.getElementById('study-view').classList.contains('hidden')) return;
+        let b = document.getElementById('btn-show-answer'), a = document.getElementById('action-buttons');
+        if (!b.classList.contains('hidden')) { if (event.code === 'Space' || event.code === 'Enter') { event.preventDefault(); showAnswer(); } } 
+        else if (!a.classList.contains('hidden')) { if (event.code === 'ArrowLeft' || event.key === '1') { event.preventDefault(); markWord('forgotten'); } else if (event.code === 'ArrowRight' || event.key === '2') { event.preventDefault(); markWord('known'); } }
+        if (event.code === 'ArrowUp' || event.key === '3') { event.preventDefault(); speakCurrentWord(); }
+    });
+
+    function openStatsCenter() { hideAllViews(); document.getElementById('stats-view').classList.remove('hidden'); document.getElementById('select-all-cb').checked = false; renderStatsTable('idAsc'); }
+    function selectIdRange() {
+        let s = parseInt(document.getElementById('range-start').value), e = parseInt(document.getElementById('range-end').value);
+        if (isNaN(s) || isNaN(e) || s > e) return alert('无效范围');
+        document.querySelectorAll('.word-checkbox').forEach(cb => { if (parseInt(cb.value) >= s && parseInt(cb.value) <= e) cb.checked = true; });
+    }
+    function clearSelection() { document.querySelectorAll('.word-checkbox').forEach(cb => cb.checked = false); }
+    function renderStatsTable(sortType) {
+        let bank = getCurrentBank(); let srsBank = getSRSBank(); let statsMap = {};
+        bank.forEach(w => { let srsData = srsBank[w.id]; statsMap[w.id] = { id: w.id, word: w.word, totalReviews: 0, forgotCount: 0, due: srsData ? srsData.d : '-', ease: srsData ? `${Math.round(srsData.e * 100)}%` : '-' }; });
+        getLogs().forEach(log => { if (statsMap[log.wordId]) { statsMap[log.wordId].totalReviews++; if (log.status === 'forgotten') statsMap[log.wordId].forgotCount++; } });
+        let stats = Object.values(statsMap);
+        if (sortType === 'idAsc') stats.sort((a, b) => a.id - b.id);
+        else if (sortType === 'reviewsDesc') stats.sort((a, b) => b.totalReviews - a.totalReviews); 
+        else if (sortType === 'forgotDesc') stats.sort((a, b) => b.forgotCount - a.forgotCount);
+        let tbody = document.getElementById('stats-table-body'); tbody.innerHTML = '';
+        stats.forEach(s => { let tr = document.createElement('tr'); tr.innerHTML = `<td style="text-align:center;"><input type="checkbox" class="word-checkbox" value="${s.id}"></td><td>${s.id}</td><td style="font-weight:bold;color:#2980b9;">${s.word}</td><td style="color:#e67e22;font-weight:bold;">${s.due}</td><td style="color:#27ae60;">${s.ease}</td>`; tbody.appendChild(tr); });
+    }
+    function toggleSelectAll() { let c = document.getElementById('select-all-cb').checked; document.querySelectorAll('.word-checkbox').forEach(cb => cb.checked = c); }
+    function safeBackFromStats() { backToMenu(); }
+    function hideAllViews() { document.getElementById('menu-view').classList.add('hidden'); document.getElementById('study-view').classList.add('hidden'); document.getElementById('summary-view').classList.add('hidden'); document.getElementById('stats-view').classList.add('hidden'); document.getElementById('history-detail-view').classList.add('hidden'); }
+    function backToMenu() { hideAllViews(); document.getElementById('menu-view').classList.remove('hidden'); }
+
+    (function autoFixCorruptedDates() {
+        ['en_srs_data_toefl', 'en_srs_data_gre', 'en_srs_data_personal'].forEach(key => {
+            let bank = JSON.parse(localStorage.getItem(key) || '{}');
+            let fixed = false;
+            for (let id in bank) {
+                if (bank[id].i > 180) { bank[id].i = 180; let nd = new Date(); nd.setDate(nd.getDate() + 180); bank[id].d = nd.toISOString().split('T')[0]; fixed = true; }
+            }
+            if (fixed) localStorage.setItem(key, JSON.stringify(bank));
+        });
+    })();
+
+    window.addEventListener('popstate', function(e) {
+        if (!document.getElementById('study-view').classList.contains('hidden')) {
+            if (confirm("⚠️ 确定要中断退出吗？\n（已判定的单词记录仍会保存）")) {
+                finishSession();
+            } else {
+                history.pushState({ isStudying: true }, '', '#study');
+            }
+        } else {
+            backToMenu();
+        }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+        let backupStr = localStorage.getItem('en_active_session');
+        if (backupStr) {
+            setTimeout(() => {
+                if (confirm("检测到上次中断的学习进度，是否继续？\n（取消则放弃进度）")) {
+                    let backup = JSON.parse(backupStr);
+                    queue = backup.queue; historyStack = backup.historyStack; firstImpressions = backup.firstImpressions;
+                    currentIndex = backup.currentIndex; relearnSteps = backup.relearnSteps || {}; currentStudyMode = backup.currentStudyMode;
+                    if (backup.activeBankName) { activeBankName = backup.activeBankName; document.getElementById('dictionary-select').value = activeBankName; }
+                    hideAllViews(); document.getElementById('study-view').classList.remove('hidden');
+                    history.pushState({ isStudying: true }, '', '#study');
+                    renderWord();
+                } else { clearSessionBackup(); }
+            }, 300);
+        }
+    });
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('./sw_en.js').catch(function(err) {});
+        });
+    }
+
+    updateHistoryCalendar(); updateDueCountDisplay(); 
 </script>
 </body>
 </html>
